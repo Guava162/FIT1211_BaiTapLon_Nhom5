@@ -1,16 +1,20 @@
 #ifndef MATHANG_H
 #define MATHANG_H
 
+#define maxMa 21
+#define maxTen 51
+#define maxSpDon 100
+
 class MatHang {
 private:
-    char   maHang[21];
-    char   tenHang[51];
+    char   maHang[maxMa];
+    char   tenHang[maxTen];
     double giaBan;
 
 public:
     MatHang();
-    void nhap();                       // Nhập đủ: mã + tên + giá (dùng khi không cần validate trước)
-    void nhapConMa(const char* ma);    // Gán mã có sẵn, chỉ nhập tên + giá
+    void nhap();
+    void nhapConMa(const char* ma);
     void xuat() const;
     const char* getMaHang()  const;
     const char* getTenHang() const;

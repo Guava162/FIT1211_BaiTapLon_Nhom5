@@ -3,7 +3,6 @@
 using namespace std;
 
 // ==================== HÀM TIỆN ÍCH ====================
-// Nhập và validate số thực không âm, lặp lại tới khi hợp lệ
 double nhapSoThucDuong(const char* thongBaoLoi) {
     double bien;
     while (!(cin >> bien) || bien < 0) {
@@ -12,7 +11,6 @@ double nhapSoThucDuong(const char* thongBaoLoi) {
     cin.ignore(10000, '\n'); return bien;
 }
 
-// Nhập và validate số nguyên dương, lặp lại tới khi hợp lệ
 int nhapSoNguyenDuong(const char* thongBaoLoi) {
     int bien;
     while (!(cin >> bien) || bien <= 0) {
@@ -21,208 +19,204 @@ int nhapSoNguyenDuong(const char* thongBaoLoi) {
     cin.ignore(10000, '\n'); return bien;
 }
 
-// Mở rộng mảng động (x2 sức chứa) khi đầy, dùng chung cho mọi loại mảng
-template <typename T>
-void moRongMang(T*& mang, int n, int& sucChua) {
-    int newCap = (sucChua == 0) ? 10 : sucChua * 2;
-    T* temp = new T[newCap];
-    for (int i = 0; i < n; i++) temp[i] = mang[i];
-    delete[] mang;
-    mang = temp;
-    sucChua = newCap;
-}
-
-// Kiểm tra mã hàng đã tồn tại trong kho chưa (dùng để chống trùng mã)
-static bool maHangTonTai(const char* ma, const MatHang* kho, int nKho) {
+static int timViTriMatHang(const char* ma, const MatHang kho[], int nKho) {
     for (int i = 0; i < nKho; i++)
-        if (strcmp(kho[i].getMaHang(), ma) == 0) return true;
-    return false;
+        if (strcmp(kho[i].getMaHang(), ma) == 0) return i;
+    return -1;
 }
 
 // ==================== FILE I/O ====================
-// Ghi toàn bộ kho và danh sách hóa đơn xuống file nhị phân
-void SaveData(MatHang* kho, int nKho, HoaDonXuat* dsHDX, int nHDX) {
+void SaveData(const MatHang kho[], int nKho, const HoaDon dsHD[], int nHD) {
     ofstream fKho("Kho.dat", ios::binary);
     if (fKho) {
-        fKho.write(reinterpret_cast<char*>(&nKho), sizeof(nKho));
-        for (int i = 0; i < nKho; i++) fKho.write(reinterpret_cast<char*>(&kho[i]), sizeof(MatHang));
-        fKho.close();
+        fKho.write((const char*)&nKho, sizeof(nKho));
+        fKho.write((const char*)kho, sizeof(MatHang) * nKho);
     }
-    ofstream fHDX("HoaDonXuat.dat", ios::binary);
-    if (fHDX) {
-        fHDX.write(reinterpret_cast<char*>(&nHDX), sizeof(nHDX));
-        for (int i = 0; i < nHDX; i++) fHDX.write(reinterpret_cast<char*>(&dsHDX[i]), sizeof(HoaDonXuat));
-        fHDX.close();
+    ofstream fHD("HoaDon.dat", ios::binary);
+    if (fHD) {
+        fHD.write((const char*)&nHD, sizeof(nHD));
+        fHD.write((const char*)dsHD, sizeof(HoaDon) * nHD);
     }
 }
 
-// Đọc kho và danh sách hóa đơn từ file; nếu file chưa có thì khởi tạo mảng trống
-void LoadData(MatHang*& kho, int& nKho, int& sucChuaKho, HoaDonXuat*& dsHDX, int& nHDX, int& sucChuaHDX) {
-    kho = nullptr; nKho = 0; sucChuaKho = 0;
-    dsHDX = nullptr; nHDX = 0; sucChuaHDX = 0;
-
+void LoadData(MatHang kho[], int& nKho, HoaDon dsHD[], int& nHD) {
+    nKho = 0; nHD = 0;
     ifstream fKho("Kho.dat", ios::binary);
-    if (fKho) {
-        fKho.read(reinterpret_cast<char*>(&nKho), sizeof(nKho));
-        if (nKho < 0) nKho = 0;
-        sucChuaKho = (nKho == 0) ? 10 : nKho;
-        kho = new MatHang[sucChuaKho];
-        for (int i = 0; i < nKho; i++) fKho.read(reinterpret_cast<char*>(&kho[i]), sizeof(MatHang));
-        fKho.close();
-    } else { sucChuaKho = 10; kho = new MatHang[sucChuaKho]; }
+    if (fKho && fKho.read((char*)&nKho, sizeof(nKho)) && nKho >= 0 && nKho <= maxKho) {
+        fKho.read((char*)kho, sizeof(MatHang) * nKho);
+    } else nKho = 0;
 
-    ifstream fHDX("HoaDonXuat.dat", ios::binary);
-    if (fHDX) {
-        fHDX.read(reinterpret_cast<char*>(&nHDX), sizeof(nHDX));
-        if (nHDX < 0) nHDX = 0;
-        sucChuaHDX = (nHDX == 0) ? 10 : nHDX;
-        dsHDX = new HoaDonXuat[sucChuaHDX];
-        for (int i = 0; i < nHDX; i++) fHDX.read(reinterpret_cast<char*>(&dsHDX[i]), sizeof(HoaDonXuat));
-        fHDX.close();
-    } else { sucChuaHDX = 10; dsHDX = new HoaDonXuat[sucChuaHDX]; }
+    ifstream fHD("HoaDon.dat", ios::binary);
+    if (fHD && fHD.read((char*)&nHD, sizeof(nHD)) && nHD >= 0 && nHD <= maxHd) {
+        fHD.read((char*)dsHD, sizeof(HoaDon) * nHD);
+    } else nHD = 0;
 }
 
 // ==================== QUẢN LÝ MẶT HÀNG ====================
-// Nhập thêm 1 mặt hàng mới; từ chối nếu mã hàng đã tồn tại trong kho
-void themMatHang(MatHang*& kho, int& nKho, int& sucChuaKho) {
-    char ma[21];
-    cout << "--- NHAP THEM MAT HANG ---\n";
-    cout << "  Nhap ma mat hang (toi da 20 ky tu): ";
-    cin.width(21); cin >> ma; cin.ignore(10000, '\n');
-
-    // Validate: chặn trùng mã trước khi nhập tiếp tên/giá
-    if (maHangTonTai(ma, kho, nKho)) {
-        cout << "[!] Ma hang '" << ma << "' da ton tai trong kho!\n";
-        return;
+void themMatHang(MatHang kho[], int& nKho) {
+    if (nKho >= maxKho) {
+        cout << "[!] Kho da day (Toi da " << maxKho << " mat hang).\n"; return;
     }
 
-    if (nKho >= sucChuaKho) moRongMang(kho, nKho, sucChuaKho);
+    char ma[maxMa];
+    cout << "--- NHAP THEM MAT HANG ---\n  Nhap ma (toi da 20 ky tu): ";
+    cin.width(maxMa); cin >> ma; cin.ignore(10000, '\n');
 
-    kho[nKho].nhapConMa(ma); // Mã đã hợp lệ, chỉ còn nhập tên + giá
+    if (timViTriMatHang(ma, kho, nKho) != -1) {
+        cout << "[!] Ma hang '" << ma << "' da ton tai!\n"; return;
+    }
+
+    kho[nKho].nhapConMa(ma);
     nKho++;
     cout << "Da them mat hang thanh cong.\n";
 }
 
-// Sửa thông tin (tên, giá) của một mặt hàng theo mã
-void suaThongTinMatHang(MatHang* kho, int nKho) {
-    char ma[21];
+void suaThongTinMatHang(MatHang kho[], int nKho) {
+    char ma[maxMa];
     cout << "Nhap ma mat hang can sua: ";
-    cin.width(21); cin >> ma; cin.ignore(10000, '\n');
+    cin.width(maxMa); cin >> ma; cin.ignore(10000, '\n');
 
-    for (int i = 0; i < nKho; i++) {
-        if (strcmp(kho[i].getMaHang(), ma) == 0) {
-            char tenMoi[51];
-            cout << "Nhap ten moi: "; cin.getline(tenMoi, 51);
-            cout << "Nhap gia moi: ";
-            double giaMoi = nhapSoThucDuong("Gia khong hop le, nhap lai: ");
+    int idx = timViTriMatHang(ma, kho, nKho);
+    if (idx != -1) {
+        char tenMoi[maxTen];
+        cout << "Nhap ten moi: "; cin.getline(tenMoi, maxTen);
+        if (cin.fail()) { cin.clear(); cin.ignore(10000, '\n'); }
+        cout << "Nhap gia moi: ";
+        double giaMoi = nhapSoThucDuong("Gia khong hop le: ");
 
-            kho[i].setTenHang(tenMoi);
-            kho[i].setGiaBan(giaMoi);
-            cout << "Da sua thong tin thanh cong!\n"; return;
-        }
+        kho[idx].setTenHang(tenMoi); kho[idx].setGiaBan(giaMoi);
+        cout << "Da sua thong tin thanh cong!\n";
+    } else {
+        cout << "[!] Khong tim thay mat hang.\n";
     }
-    cout << "[!] Khong tim thay mat hang '" << ma << "'.\n";
 }
 
-// Xóa 1 mặt hàng theo mã; từ chối nếu mặt hàng đang nằm trong một đơn hàng
-void xoaMatHang(MatHang*& kho, int& nKho, HoaDonXuat* dsHDX, int nHDX) {
-    char ma[21];
+void xoaMatHang(MatHang kho[], int& nKho, HoaDon dsHD[], int nHD) {
+    char ma[maxMa];
     cout << "Nhap ma mat hang can xoa: ";
-    cin.width(21); cin >> ma; cin.ignore(10000, '\n');
+    cin.width(maxMa); cin >> ma; cin.ignore(10000, '\n');
 
-    for (int i = 0; i < nHDX; i++) {
-        if (dsHDX[i].chuaMatHang(ma)) {
-            cout << "[!] Mat hang dang ton tai trong don hang '" << dsHDX[i].getMaHDX() << "'. KHONG THE XOA!\n"; return;
+    for (int i = 0; i < nHD; i++) {
+        if (dsHD[i].chuaMatHang(ma)) {
+            cout << "[!] Mat hang nam trong don '" << dsHD[i].getMaHD() << "'. KHONG THE XOA!\n"; return;
         }
     }
-    for (int i = 0; i < nKho; i++) {
-        if (strcmp(kho[i].getMaHang(), ma) == 0) {
-            for (int j = i; j < nKho - 1; j++) kho[j] = kho[j + 1];
-            nKho--;
-            cout << "Da xoa mat hang '" << ma << "'.\n"; return;
-        }
+    
+    int idx = timViTriMatHang(ma, kho, nKho);
+    if (idx != -1) {
+        for (int j = idx; j < nKho - 1; j++) kho[j] = kho[j + 1];
+        nKho--;
+        cout << "Da xoa mat hang.\n";
+    } else {
+        cout << "[!] Khong tim thay.\n";
     }
-    cout << "[!] Khong tim thay mat hang '" << ma << "'.\n";
 }
 
-// In toàn bộ danh sách mặt hàng đang có trong kho
-void lietKeMatHang(MatHang* kho, int nKho) {
-    if (nKho == 0) { cout << "Kho hang dang trong.\n"; return; }
+void lietKeMatHang(const MatHang kho[], int nKho) {
+    if (nKho == 0) { cout << "Kho hang trong.\n"; return; }
     cout << "--- DANH SACH MAT HANG ---\n";
     cout << left << setw(20) << "Ma Hang" << setw(35) << "Ten Hang" << "Gia Ban\n" << string(65, '-') << "\n";
     for (int i = 0; i < nKho; i++) kho[i].xuat();
 }
 
-// ==================== QUẢN LÝ HÓA ĐƠN XUẤT ====================
-// Tạo 1 đơn hàng mới; từ chối nếu kho trống (không có gì để bán)
-void themHoaDon(HoaDonXuat*& dsHDX, int& nHDX, int& sucChuaHDX, const MatHang* kho, int nKho) {
-    if (nKho == 0) { cout << "[!] Kho hang trong, khong the tao don hang!\n"; return; }
-    if (nHDX >= sucChuaHDX) moRongMang(dsHDX, nHDX, sucChuaHDX);
+// ==================== QUẢN LÝ HÓA ĐƠN ====================
+void themHoaDon(HoaDon dsHD[], int& nHD, const MatHang kho[], int nKho) {
+    if (nKho == 0) { cout << "[!] Kho hang trong!\n"; return; }
+    if (nHD >= maxHd) { cout << "[!] He thong da luu toi da " << maxHd << " don hang.\n"; return; }
+    
+    char maHD[maxMa];
+    cout << "--- NHAP THONG TIN DON HANG ---\nNhap ma don hang: ";
+    cin.width(maxMa); cin >> maHD; cin.ignore(10000, '\n');
 
-    cout << "--- NHAP THONG TIN DON HANG ---\n";
-    dsHDX[nHDX].nhap(kho, nKho);
-    nHDX++;
-    cout << "Da them don hang thanh cong.\n";
+    for (int i = 0; i < nHD; i++) {
+        if (strcmp(dsHD[i].getMaHD(), maHD) == 0) {
+            cout << "[!] Ma don hang da ton tai!\n"; return;
+        }
+    }
+
+    dsHD[nHD].setMaHD(maHD);
+
+    cout << "Nhap so luong loai mat hang muon mua: ";
+    int slMatHang = nhapSoNguyenDuong("Gia tri khong hop le: ");
+    
+    for (int i = 0; i < slMatHang; i++) {
+        char ma[maxMa];
+        cout << "  Ma mat hang " << i + 1 << ": ";
+        cin.width(maxMa); cin >> ma; cin.ignore(10000, '\n');
+
+        int idx = timViTriMatHang(ma, kho, nKho);
+        if (idx == -1) { cout << "  [!] Ma hang khong co trong kho.\n"; continue; }
+
+        cout << "  So luong: ";
+        int slMua = nhapSoNguyenDuong("  So luong > 0: ");
+        dsHD[nHD].themMatHang(ma, kho[idx].getTenHang(), kho[idx].getGiaBan(), slMua);
+    }
+    
+    nHD++;
+    cout << "Da khoi tao don hang thanh cong.\n";
 }
 
-// Sửa 1 đơn hàng theo mã: hiển thị submenu thêm/sửa/xóa mặt hàng trong đơn
-void suaThongTinDonHang(HoaDonXuat* dsHDX, int nHDX, const MatHang* kho, int nKho) {
-    char ma[21];
+void suaThongTinDonHang(HoaDon dsHD[], int nHD, const MatHang kho[], int nKho) {
+    char ma[maxMa];
     cout << "Nhap ma Don hang can sua: ";
-    cin.width(21); cin >> ma; cin.ignore(10000, '\n');
+    cin.width(maxMa); cin >> ma; cin.ignore(10000, '\n');
 
-    for (int i = 0; i < nHDX; i++) {
-        if (strcmp(dsHDX[i].getMaHDX(), ma) == 0) {
+    for (int i = 0; i < nHD; i++) {
+        if (strcmp(dsHD[i].getMaHD(), ma) == 0) {
             char choice;
             do {
-                cout << "\n--- SUA DON HANG: " << dsHDX[i].getMaHDX() << " ---\n";
-                dsHDX[i].xuat();
-                cout << "\n1. Them mat hang vao don\n2. Sua so luong mat hang\n3. Xoa mat hang khoi don\n4. Thoat\nLua chon: ";
+                cout << "\n--- SUA DON: " << dsHD[i].getMaHD() << " ---\n";
+                dsHD[i].xuatNgan();
+                cout << "\n1. Them mat hang\n2. Sua so luong\n3. Xoa mat hang\n4. Thoat\nLua chon: ";
                 cin >> choice; cin.ignore(10000, '\n');
 
-                char maSP[21]; int sl;
+                char maSP[maxMa]; int sl;
                 switch (choice) {
-                    case '1':
-                        cout << "Nhap ma SP can them: "; cin.width(21); cin >> maSP; cin.ignore(10000, '\n');
-                        cout << "Nhap so luong: "; sl = nhapSoNguyenDuong("So luong phai lon hon 0, nhap lai: ");
-                        dsHDX[i].themMatHang(maSP, sl, kho, nKho);
+                    case '1': {
+                        cout << "Nhap ma SP can them: "; cin.width(maxMa); cin >> maSP; cin.ignore(10000, '\n');
+                        int idx = timViTriMatHang(maSP, kho, nKho);
+                        if (idx == -1) { cout << "[!] Ma SP khong ton tai.\n"; break; }
+                        cout << "Nhap so luong: "; sl = nhapSoNguyenDuong("So luong > 0: ");
+                        dsHD[i].themMatHang(maSP, kho[idx].getTenHang(), kho[idx].getGiaBan(), sl);
+                        SaveData(kho, nKho, dsHD, nHD); 
                         break;
+                    }
                     case '2':
-                        cout << "Nhap ma SP can sua so luong: "; cin.width(21); cin >> maSP; cin.ignore(10000, '\n');
-                        cout << "Nhap so luong moi: "; sl = nhapSoNguyenDuong("So luong phai lon hon 0, nhap lai: ");
-                        dsHDX[i].suaSoLuong(maSP, sl);
+                        cout << "Nhap ma SP: "; cin.width(maxMa); cin >> maSP; cin.ignore(10000, '\n');
+                        cout << "Nhap so luong moi: "; sl = nhapSoNguyenDuong("So luong > 0: ");
+                        dsHD[i].suaSoLuong(maSP, sl);
+                        SaveData(kho, nKho, dsHD, nHD);
                         break;
                     case '3':
-                        cout << "Nhap ma SP can xoa: "; cin.width(21); cin >> maSP; cin.ignore(10000, '\n');
-                        dsHDX[i].xoaMatHang(maSP);
+                        cout << "Nhap ma SP can xoa: "; cin.width(maxMa); cin >> maSP; cin.ignore(10000, '\n');
+                        dsHD[i].xoaMatHang(maSP);
+                        SaveData(kho, nKho, dsHD, nHD);
                         break;
                 }
             } while (choice != '4');
             return;
         }
     }
-    cout << "[!] Khong tim thay don hang '" << ma << "'.\n";
+    cout << "[!] Khong tim thay don hang.\n";
 }
 
-// Xóa 1 đơn hàng theo mã
-void xoaHoaDon(HoaDonXuat*& dsHDX, int& nHDX) {
-    char ma[21];
+void xoaHoaDon(HoaDon dsHD[], int& nHD) {
+    char ma[maxMa];
     cout << "Nhap ma Don hang can xoa: ";
-    cin.width(21); cin >> ma; cin.ignore(10000, '\n');
+    cin.width(maxMa); cin >> ma; cin.ignore(10000, '\n');
 
-    for (int i = 0; i < nHDX; i++) {
-        if (strcmp(dsHDX[i].getMaHDX(), ma) == 0) {
-            for (int j = i; j < nHDX - 1; j++) dsHDX[j] = dsHDX[j + 1];
-            nHDX--;
-            cout << "Da xoa don hang '" << ma << "'.\n"; return;
+    for (int i = 0; i < nHD; i++) {
+        if (strcmp(dsHD[i].getMaHD(), ma) == 0) {
+            for (int j = i; j < nHD - 1; j++) dsHD[j] = dsHD[j + 1];
+            nHD--;
+            cout << "Da xoa don hang.\n"; return;
         }
     }
-    cout << "[!] Khong tim thay don hang '" << ma << "'.\n";
+    cout << "[!] Khong tim thay don hang.\n";
 }
 
-// In toàn bộ danh sách đơn hàng, kèm chi tiết tên/giá/thành tiền tra từ kho
-void lietKeHoaDon(HoaDonXuat* dsHDX, int nHDX, const MatHang* kho, int nKho) {
-    if (nHDX == 0) { cout << "Danh sach don hang dang trong.\n"; return; }
-    cout << "--- DANH SACH DON HANG (" << nHDX << " don) ---\n";
-    for (int i = 0; i < nHDX; i++) dsHDX[i].xuat(kho, nKho);
+void lietKeHoaDon(const HoaDon dsHD[], int nHD) {
+    if (nHD == 0) { cout << "Danh sach don hang trong.\n"; return; }
+    cout << "--- DANH SACH DON HANG (" << nHD << " don) ---\n";
+    for (int i = 0; i < nHD; i++) dsHD[i].xuatChiTiet();
 }

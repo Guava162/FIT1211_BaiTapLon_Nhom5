@@ -7,27 +7,25 @@
 #include <iomanip>
 
 #include "MatHang.h"
-#include "HoaDonXuat.h"
+#include "HoaDon.h"
 
-// Hàm tiện ích kiểm tra nhập liệu dùng chung
+#define maxKho 100
+#define maxHd 100
+
 double nhapSoThucDuong(const char* thongBaoLoi);
 int nhapSoNguyenDuong(const char* thongBaoLoi);
 
-// Lưu / Tải dữ liệu nhị phân
-void SaveData(MatHang* kho, int nKho, HoaDonXuat* dsHDX, int nHDX);
-void LoadData(MatHang*& kho, int& nKho, int& sucChuaKho,
-              HoaDonXuat*& dsHDX, int& nHDX, int& sucChuaHDX);
+void SaveData(const MatHang kho[], int nKho, const HoaDon dsHD[], int nHD);
+void LoadData(MatHang kho[], int& nKho, HoaDon dsHD[], int& nHD);
 
-// Quản lý mặt hàng
-void themMatHang(MatHang*& kho, int& nKho, int& sucChuaKho);
-void suaThongTinMatHang(MatHang* kho, int nKho);
-void xoaMatHang(MatHang*& kho, int& nKho, HoaDonXuat* dsHDX, int nHDX);
-void lietKeMatHang(MatHang* kho, int nKho);
+void themMatHang(MatHang kho[], int& nKho);
+void suaThongTinMatHang(MatHang kho[], int nKho);
+void xoaMatHang(MatHang kho[], int& nKho, HoaDon dsHD[], int nHD);
+void lietKeMatHang(const MatHang kho[], int nKho);
 
-// Quản lý hóa đơn xuất
-void themHoaDon(HoaDonXuat*& dsHDX, int& nHDX, int& sucChuaHDX, const MatHang* kho, int nKho);
-void suaThongTinDonHang(HoaDonXuat* dsHDX, int nHDX, const MatHang* kho, int nKho);
-void xoaHoaDon(HoaDonXuat*& dsHDX, int& nHDX);
-void lietKeHoaDon(HoaDonXuat* dsHDX, int nHDX, const MatHang* kho, int nKho);
+void themHoaDon(HoaDon dsHD[], int& nHD, const MatHang kho[], int nKho);
+void suaThongTinDonHang(HoaDon dsHD[], int nHD, const MatHang kho[], int nKho);
+void xoaHoaDon(HoaDon dsHD[], int& nHD);
+void lietKeHoaDon(const HoaDon dsHD[], int nHD);
 
 #endif
