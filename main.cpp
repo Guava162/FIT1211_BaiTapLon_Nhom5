@@ -15,7 +15,8 @@ int main() {
         cout << "4. Nhap thong tin don hang\n5. Sua thong tin don hang (theo ma)\n6. Xoa don hang (theo ma)\n";
         cout << "7. Liet ke toan bo san pham trong he thong\n8. Liet ke toan bo don hang co trong he thong\n9. Thoat khoi he thong\n";
         cout << "========================================\nNhap lua chon: "; 
-        cin >> choice; cin.ignore(10000, '\n');
+        if (!(cin >> choice)) break; // Hết input hoặc lỗi đọc -> dừng chương trình
+        cin.ignore(10000, '\n');
 
         switch (choice) {
             case 1: themMatHang(kho, nKho, sucChuaKho); break;

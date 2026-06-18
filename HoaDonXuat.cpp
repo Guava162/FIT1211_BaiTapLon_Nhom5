@@ -2,6 +2,7 @@
 
 using namespace std;
 
+// Khởi tạo: mã rỗng, số lượng 0
 ChiTietHoaDon::ChiTietHoaDon() {
     strcpy(maHang, ""); soLuong = 0;
 }
@@ -13,10 +14,12 @@ ChiTietHoaDon::ChiTietHoaDon(const char* ma, int sl) {
 const char* ChiTietHoaDon::getMaHang() const { return maHang; }
 int ChiTietHoaDon::getSoLuong() const { return soLuong; }
 
+// Chỉ chấp nhận số lượng dương
 void ChiTietHoaDon::setSoLuong(int sl) {
     if (sl > 0) soLuong = sl;
 }
 
+// In ngắn: mã hàng + số lượng (dùng trong submenu sửa đơn)
 void ChiTietHoaDon::xuat() const {
     cout << "  - Ma Hang: " << left << setw(20) << maHang << "| So luong: " << soLuong << "\n";
 }
@@ -27,12 +30,14 @@ HoaDonXuat::HoaDonXuat() {
     strcpy(maHDX, ""); soLuongMatHang = 0;
 }
 
+// Kiểm tra mã hàng có thực sự tồn tại trong kho hay không
 static bool timTrongKho(const char* ma, const MatHang* kho, int nKho) {
     for (int i = 0; i < nKho; i++)
         if (strcmp(kho[i].getMaHang(), ma) == 0) return true;
     return false;
 }
 
+// Nhập 1 đơn hàng mới: mã đơn + danh sách mặt hàng (validate tồn tại trong kho, không trùng)
 void HoaDonXuat::nhap(const MatHang* kho, int nKho) {
     cout << "Nhap ma don hang: ";
     cin.width(21); cin >> maHDX; cin.ignore(10000, '\n');
@@ -59,12 +64,14 @@ void HoaDonXuat::nhap(const MatHang* kho, int nKho) {
     soLuongMatHang = nhapDuoc;
 }
 
+// In ngắn: chỉ mã đơn + danh sách (mã hàng, số lượng) — dùng trong submenu sửa
 void HoaDonXuat::xuat() const {
     cout << "\nMa Don Hang: " << maHDX << "\n";
     if (soLuongMatHang == 0) { cout << "  (Don hang trong)\n"; return; }
     for (int i = 0; i < soLuongMatHang; i++) danhSachBan[i].xuat();
 }
 
+// In đầy đủ dạng bảng: mã, tên (tra từ kho), đơn giá, số lượng, thành tiền, tổng tiền
 void HoaDonXuat::xuat(const MatHang* kho, int nKho) const {
     double tongTien = 0;
     cout << "\n+--------------------------------------------------+\n";
@@ -81,6 +88,7 @@ void HoaDonXuat::xuat(const MatHang* kho, int nKho) const {
         int sl = danhSachBan[i].getSoLuong();
         double donGia = 0; const char* tenHang = "(?)";
 
+        // Tra kho để lấy tên và giá tương ứng với mã hàng
         for (int j = 0; j < nKho; j++) {
             if (strcmp(kho[j].getMaHang(), ma) == 0) {
                 donGia  = kho[j].getGiaBan(); tenHang = kho[j].getTenHang(); break;
@@ -95,12 +103,14 @@ void HoaDonXuat::xuat(const MatHang* kho, int nKho) const {
 
 const char* HoaDonXuat::getMaHDX() const { return maHDX; }
 
+// Kiểm tra mã hàng có nằm trong đơn hàng hiện tại không
 bool HoaDonXuat::chuaMatHang(const char* ma) const {
     for (int i = 0; i < soLuongMatHang; i++)
         if (strcmp(danhSachBan[i].getMaHang(), ma) == 0) return true;
     return false;
 }
 
+// Thêm 1 mặt hàng vào đơn: validate tồn tại trong kho, không trùng, số lượng hợp lệ, đơn chưa đầy
 void HoaDonXuat::themMatHang(const char* ma, int sl, const MatHang* kho, int nKho) {
     if (!timTrongKho(ma, kho, nKho) || chuaMatHang(ma) || sl <= 0 || soLuongMatHang >= 100) {
         cout << "  [!] Thao tac khong hop le hoac don hang da day!\n"; return;
@@ -109,6 +119,7 @@ void HoaDonXuat::themMatHang(const char* ma, int sl, const MatHang* kho, int nKh
     cout << "  Da them mat hang thanh cong.\n";
 }
 
+// Sửa số lượng của 1 mặt hàng đã có trong đơn
 void HoaDonXuat::suaSoLuong(const char* ma, int slMoi) {
     if (slMoi <= 0) return;
     for (int i = 0; i < soLuongMatHang; i++) {
@@ -120,6 +131,7 @@ void HoaDonXuat::suaSoLuong(const char* ma, int slMoi) {
     cout << "  [!] Khong tim thay mat hang.\n";
 }
 
+// Xóa 1 mặt hàng khỏi đơn, dồn các phần tử phía sau lên
 void HoaDonXuat::xoaMatHang(const char* ma) {
     for (int i = 0; i < soLuongMatHang; i++) {
         if (strcmp(danhSachBan[i].getMaHang(), ma) == 0) {

@@ -3,6 +3,7 @@
 using namespace std;
 
 // ==================== HÀM TIỆN ÍCH ====================
+// Nhập và validate số thực không âm, lặp lại tới khi hợp lệ
 double nhapSoThucDuong(const char* thongBaoLoi) {
     double bien;
     while (!(cin >> bien) || bien < 0) {
@@ -11,6 +12,7 @@ double nhapSoThucDuong(const char* thongBaoLoi) {
     cin.ignore(10000, '\n'); return bien;
 }
 
+// Nhập và validate số nguyên dương, lặp lại tới khi hợp lệ
 int nhapSoNguyenDuong(const char* thongBaoLoi) {
     int bien;
     while (!(cin >> bien) || bien <= 0) {
@@ -19,7 +21,7 @@ int nhapSoNguyenDuong(const char* thongBaoLoi) {
     cin.ignore(10000, '\n'); return bien;
 }
 
-// Hàm dùng chung để tự động x2 sức chứa cho bất kỳ loại mảng động nào
+// Mở rộng mảng động (x2 sức chứa) khi đầy, dùng chung cho mọi loại mảng
 template <typename T>
 void moRongMang(T*& mang, int n, int& sucChua) {
     int newCap = (sucChua == 0) ? 10 : sucChua * 2;
@@ -30,7 +32,15 @@ void moRongMang(T*& mang, int n, int& sucChua) {
     sucChua = newCap;
 }
 
+// Kiểm tra mã hàng đã tồn tại trong kho chưa (dùng để chống trùng mã)
+static bool maHangTonTai(const char* ma, const MatHang* kho, int nKho) {
+    for (int i = 0; i < nKho; i++)
+        if (strcmp(kho[i].getMaHang(), ma) == 0) return true;
+    return false;
+}
+
 // ==================== FILE I/O ====================
+// Ghi toàn bộ kho và danh sách hóa đơn xuống file nhị phân
 void SaveData(MatHang* kho, int nKho, HoaDonXuat* dsHDX, int nHDX) {
     ofstream fKho("Kho.dat", ios::binary);
     if (fKho) {
@@ -46,6 +56,7 @@ void SaveData(MatHang* kho, int nKho, HoaDonXuat* dsHDX, int nHDX) {
     }
 }
 
+// Đọc kho và danh sách hóa đơn từ file; nếu file chưa có thì khởi tạo mảng trống
 void LoadData(MatHang*& kho, int& nKho, int& sucChuaKho, HoaDonXuat*& dsHDX, int& nHDX, int& sucChuaHDX) {
     kho = nullptr; nKho = 0; sucChuaKho = 0;
     dsHDX = nullptr; nHDX = 0; sucChuaHDX = 0;
@@ -72,15 +83,27 @@ void LoadData(MatHang*& kho, int& nKho, int& sucChuaKho, HoaDonXuat*& dsHDX, int
 }
 
 // ==================== QUẢN LÝ MẶT HÀNG ====================
+// Nhập thêm 1 mặt hàng mới; từ chối nếu mã hàng đã tồn tại trong kho
 void themMatHang(MatHang*& kho, int& nKho, int& sucChuaKho) {
-    if (nKho >= sucChuaKho) moRongMang(kho, nKho, sucChuaKho);
-    
+    char ma[21];
     cout << "--- NHAP THEM MAT HANG ---\n";
-    kho[nKho].nhap();
+    cout << "  Nhap ma mat hang (toi da 20 ky tu): ";
+    cin.width(21); cin >> ma; cin.ignore(10000, '\n');
+
+    // Validate: chặn trùng mã trước khi nhập tiếp tên/giá
+    if (maHangTonTai(ma, kho, nKho)) {
+        cout << "[!] Ma hang '" << ma << "' da ton tai trong kho!\n";
+        return;
+    }
+
+    if (nKho >= sucChuaKho) moRongMang(kho, nKho, sucChuaKho);
+
+    kho[nKho].nhapConMa(ma); // Mã đã hợp lệ, chỉ còn nhập tên + giá
     nKho++;
     cout << "Da them mat hang thanh cong.\n";
 }
 
+// Sửa thông tin (tên, giá) của một mặt hàng theo mã
 void suaThongTinMatHang(MatHang* kho, int nKho) {
     char ma[21];
     cout << "Nhap ma mat hang can sua: ";
@@ -90,9 +113,9 @@ void suaThongTinMatHang(MatHang* kho, int nKho) {
         if (strcmp(kho[i].getMaHang(), ma) == 0) {
             char tenMoi[51];
             cout << "Nhap ten moi: "; cin.getline(tenMoi, 51);
-            cout << "Nhap gia moi: "; 
+            cout << "Nhap gia moi: ";
             double giaMoi = nhapSoThucDuong("Gia khong hop le, nhap lai: ");
-            
+
             kho[i].setTenHang(tenMoi);
             kho[i].setGiaBan(giaMoi);
             cout << "Da sua thong tin thanh cong!\n"; return;
@@ -101,6 +124,7 @@ void suaThongTinMatHang(MatHang* kho, int nKho) {
     cout << "[!] Khong tim thay mat hang '" << ma << "'.\n";
 }
 
+// Xóa 1 mặt hàng theo mã; từ chối nếu mặt hàng đang nằm trong một đơn hàng
 void xoaMatHang(MatHang*& kho, int& nKho, HoaDonXuat* dsHDX, int nHDX) {
     char ma[21];
     cout << "Nhap ma mat hang can xoa: ";
@@ -121,6 +145,7 @@ void xoaMatHang(MatHang*& kho, int& nKho, HoaDonXuat* dsHDX, int nHDX) {
     cout << "[!] Khong tim thay mat hang '" << ma << "'.\n";
 }
 
+// In toàn bộ danh sách mặt hàng đang có trong kho
 void lietKeMatHang(MatHang* kho, int nKho) {
     if (nKho == 0) { cout << "Kho hang dang trong.\n"; return; }
     cout << "--- DANH SACH MAT HANG ---\n";
@@ -129,6 +154,7 @@ void lietKeMatHang(MatHang* kho, int nKho) {
 }
 
 // ==================== QUẢN LÝ HÓA ĐƠN XUẤT ====================
+// Tạo 1 đơn hàng mới; từ chối nếu kho trống (không có gì để bán)
 void themHoaDon(HoaDonXuat*& dsHDX, int& nHDX, int& sucChuaHDX, const MatHang* kho, int nKho) {
     if (nKho == 0) { cout << "[!] Kho hang trong, khong the tao don hang!\n"; return; }
     if (nHDX >= sucChuaHDX) moRongMang(dsHDX, nHDX, sucChuaHDX);
@@ -139,6 +165,7 @@ void themHoaDon(HoaDonXuat*& dsHDX, int& nHDX, int& sucChuaHDX, const MatHang* k
     cout << "Da them don hang thanh cong.\n";
 }
 
+// Sửa 1 đơn hàng theo mã: hiển thị submenu thêm/sửa/xóa mặt hàng trong đơn
 void suaThongTinDonHang(HoaDonXuat* dsHDX, int nHDX, const MatHang* kho, int nKho) {
     char ma[21];
     cout << "Nhap ma Don hang can sua: ";
@@ -177,6 +204,7 @@ void suaThongTinDonHang(HoaDonXuat* dsHDX, int nHDX, const MatHang* kho, int nKh
     cout << "[!] Khong tim thay don hang '" << ma << "'.\n";
 }
 
+// Xóa 1 đơn hàng theo mã
 void xoaHoaDon(HoaDonXuat*& dsHDX, int& nHDX) {
     char ma[21];
     cout << "Nhap ma Don hang can xoa: ";
@@ -192,6 +220,7 @@ void xoaHoaDon(HoaDonXuat*& dsHDX, int& nHDX) {
     cout << "[!] Khong tim thay don hang '" << ma << "'.\n";
 }
 
+// In toàn bộ danh sách đơn hàng, kèm chi tiết tên/giá/thành tiền tra từ kho
 void lietKeHoaDon(HoaDonXuat* dsHDX, int nHDX, const MatHang* kho, int nKho) {
     if (nHDX == 0) { cout << "Danh sach don hang dang trong.\n"; return; }
     cout << "--- DANH SACH DON HANG (" << nHDX << " don) ---\n";
