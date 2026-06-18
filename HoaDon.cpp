@@ -2,16 +2,20 @@
 
 using namespace std;
 
-// ==================== ChiTietHoaDon ====================
+// ==================== LỚP ChiTietHoaDon ====================
 
 ChiTietHoaDon::ChiTietHoaDon() {
-    strcpy(maHang, ""); strcpy(tenHang, "");
-    donGia = 0; soLuong = 0;
+    strcpy(maHang, ""); 
+    strcpy(tenHang, "");
+    donGia = 0; 
+    soLuong = 0;
 }
 
 ChiTietHoaDon::ChiTietHoaDon(const char* ma, const char* ten, double gia, int sl) {
-    strcpy(maHang, ma); strcpy(tenHang, ten);
-    donGia = gia; soLuong = sl;
+    strcpy(maHang, ma); 
+    strcpy(tenHang, ten);
+    donGia = gia; 
+    soLuong = sl;
 }
 
 const char* ChiTietHoaDon::getMaHang() const { return maHang; }
@@ -34,39 +38,42 @@ void ChiTietHoaDon::inChiTietFormat() const {
          << tinhThanhTien() << "|\n";
 }
 
-// ==================== HoaDon ====================
+// ==================== LỚP HoaDon ====================
 
 HoaDon::HoaDon() {
-    strcpy(maHD, ""); soLuongMatHang = 0; 
+    strcpy(maHD, ""); 
+    soLuongMatHang = 0; 
 }
 
 void HoaDon::setMaHD(const char* ma) { strcpy(maHD, ma); }
 const char* HoaDon::getMaHD() const { return maHD; }
 
 bool HoaDon::chuaMatHang(const char* ma) const {
-    for (int i = 0; i < soLuongMatHang; i++)
+    for (int i = 0; i < soLuongMatHang; i++) {
         if (strcmp(danhSachBan[i].getMaHang(), ma) == 0) return true;
-    return false;
+    }
+    return false; 
 }
 
 int HoaDon::getSoLuongCacLoaiHang() const { return soLuongMatHang; }
 const ChiTietHoaDon& HoaDon::getChiTiet(int index) const { return danhSachBan[index]; }
 
-// Lấy số lượng của 1 mặt hàng cụ thể đang có trong đơn (dùng để tính hoàn kho)
 int HoaDon::laySoLuongCuaMatHang(const char* ma) const {
     for (int i = 0; i < soLuongMatHang; i++) {
         if (strcmp(danhSachBan[i].getMaHang(), ma) == 0) return danhSachBan[i].getSoLuong();
     }
-    return 0;
+    return 0; 
 }
 
+// Thêm sản phẩm vào đơn, tự động cộng dồn số lượng nếu đã tồn tại
 void HoaDon::themMatHang(const char* ma, const char* ten, double gia, int sl) {
     if (sl <= 0) return; 
+    
     for (int i = 0; i < soLuongMatHang; i++) {
         if (strcmp(danhSachBan[i].getMaHang(), ma) == 0) {
             danhSachBan[i].congThemSoLuong(sl);
             cout << "  [+] Da cong don them so luong vao mat hang hien co.\n";
-            return;
+            return; 
         }
     }
     
@@ -89,6 +96,7 @@ void HoaDon::suaSoLuong(const char* ma, int slMoi) {
     cout << "  [!] Khong tim thay mat hang trong don.\n";
 }
 
+// Xóa 1 mặt hàng khỏi đơn hàng (Dịch mảng tĩnh)
 void HoaDon::xoaMatHang(const char* ma) {
     for (int i = 0; i < soLuongMatHang; i++) {
         if (strcmp(danhSachBan[i].getMaHang(), ma) == 0) {
@@ -107,24 +115,30 @@ void HoaDon::xoaMatHang(const char* ma) {
 void HoaDon::xuatNgan() const {
     cout << "\nMa Don: " << maHD << "\n";
     if (soLuongMatHang == 0) { cout << "  (Don hang trong)\n"; return; }
-    for (int i = 0; i < soLuongMatHang; i++) danhSachBan[i].xuatNgan();
+    for (int i = 0; i < soLuongMatHang; i++) {
+        danhSachBan[i].xuatNgan(); 
+    }
 }
 
+// In phiếu tính tiền dạng bảng
 void HoaDon::xuatChiTiet() const {
-    double tongTien = 0;
+    double tongTien = 0; 
+    
     cout << "\n+--------------------------------------------------+\n";
     cout << "| Ma Don Hang: " << left << setw(36) << maHD << "|\n";
     cout << "+--------------------------------------------------+\n";
+    
     if (soLuongMatHang == 0) {
         cout << "| (Don hang trong)                                 |\n+--------------------------------------------------+\n";
         return;
     }
+    
     cout << "| " << left << setw(12) << "Ma Hang" << setw(20) << "Ten Hang (Snapshot)" << setw(10) << "Don Gia" << setw(6)  << "SL" << setw(12) << "Thanh Tien" << "|\n";
     cout << "+--------------------------------------------------+\n";
     
     for (int i = 0; i < soLuongMatHang; i++) {
-        danhSachBan[i].inChiTietFormat();
-        tongTien += danhSachBan[i].tinhThanhTien();
+        danhSachBan[i].inChiTietFormat(); 
+        tongTien += danhSachBan[i].tinhThanhTien(); 
     }
     
     cout << "+--------------------------------------------------+\n";
