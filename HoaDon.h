@@ -5,44 +5,49 @@
 
 class ChiTietHoaDon {
 private:
-    char maHang[maxMa];
+    char maHang[maxMa];   
     char tenHang[maxTen]; 
     double donGia;         
-    int soLuong;
+    int soLuong;          
 
 public:
-    ChiTietHoaDon();
-    ChiTietHoaDon(const char* ma, const char* ten, double gia, int sl);
+    ChiTietHoaDon(); 
+    ChiTietHoaDon(const char* ma, const char* ten, double gia, int sl); 
     
     const char* getMaHang() const;
     int getSoLuong() const;
     void setSoLuong(int sl);
-    void congThemSoLuong(int slThem);
+    void congThemSoLuong(int slThem); 
     
-    void xuatNgan() const;
-    double tinhThanhTien() const;
-    void inChiTietFormat() const;
+    void xuatNgan() const;       
+    double tinhThanhTien() const; 
+    void inChiTietFormat() const; 
 };
 
 class HoaDon {
 private:
-    char maHD[maxMa];
-    int soLuongMatHang;
-    ChiTietHoaDon danhSachBan[maxSpDon];
+    char maHD[maxMa];                       
+    int soLuongMatHang;                     
+    ChiTietHoaDon danhSachBan[maxSpDon];    
 
 public:
-    HoaDon();
+    HoaDon(); 
 
     void setMaHD(const char* ma);
     const char* getMaHD() const;
-    bool chuaMatHang(const char* ma) const;
+    bool chuaMatHang(const char* ma) const; 
+    
+    // Thêm hàm để hỗ trợ hoàn kho khi xóa/sửa
+    int getSoLuongCacLoaiHang() const;
+    const ChiTietHoaDon& getChiTiet(int index) const;
+    int laySoLuongCuaMatHang(const char* ma) const;
     
     void themMatHang(const char* ma, const char* ten, double gia, int sl);
     void suaSoLuong(const char* ma, int slMoi);
     void xoaMatHang(const char* ma);
 
-    void xuatNgan() const;
-    void xuatChiTiet() const;
+    void xuatNgan() const;    
+    void xuatChiTiet() const; 
 };
 
 #endif

@@ -9,11 +9,12 @@
 #include "MatHang.h"
 #include "HoaDon.h"
 
-#define maxKho 100
-#define maxHd 100
+#define maxKho 100   
+#define maxHd 100    
 
 double nhapSoThucDuong(const char* thongBaoLoi);
 int nhapSoNguyenDuong(const char* thongBaoLoi);
+int nhapSoNguyenKhongAm(const char* thongBaoLoi); 
 
 void SaveData(const MatHang kho[], int nKho, const HoaDon dsHD[], int nHD);
 void LoadData(MatHang kho[], int& nKho, HoaDon dsHD[], int& nHD);
@@ -23,9 +24,9 @@ void suaThongTinMatHang(MatHang kho[], int nKho);
 void xoaMatHang(MatHang kho[], int& nKho, HoaDon dsHD[], int nHD);
 void lietKeMatHang(const MatHang kho[], int nKho);
 
-void themHoaDon(HoaDon dsHD[], int& nHD, const MatHang kho[], int nKho);
-void suaThongTinDonHang(HoaDon dsHD[], int nHD, const MatHang kho[], int nKho);
-void xoaHoaDon(HoaDon dsHD[], int& nHD);
-void lietKeHoaDon(const HoaDon dsHD[], int nHD);
+void themHoaDon(HoaDon dsHD[], int& nHD, MatHang kho[], int nKho); 
+void suaThongTinDonHang(HoaDon dsHD[], int nHD, MatHang kho[], int nKho);
+void xoaHoaDon(HoaDon dsHD[], int& nHD, MatHang kho[], int nKho);
+void lietKeHoaDon(const HoaDon dsHD[], int nHD); // Đã bổ sung lại dòng này
 
 #endif

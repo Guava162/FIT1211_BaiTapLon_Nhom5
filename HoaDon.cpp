@@ -3,6 +3,7 @@
 using namespace std;
 
 // ==================== ChiTietHoaDon ====================
+
 ChiTietHoaDon::ChiTietHoaDon() {
     strcpy(maHang, ""); strcpy(tenHang, "");
     donGia = 0; soLuong = 0;
@@ -15,7 +16,6 @@ ChiTietHoaDon::ChiTietHoaDon(const char* ma, const char* ten, double gia, int sl
 
 const char* ChiTietHoaDon::getMaHang() const { return maHang; }
 int ChiTietHoaDon::getSoLuong() const { return soLuong; }
-
 void ChiTietHoaDon::setSoLuong(int sl) { if (sl > 0) soLuong = sl; }
 void ChiTietHoaDon::congThemSoLuong(int slThem) { soLuong += slThem; }
 
@@ -35,8 +35,9 @@ void ChiTietHoaDon::inChiTietFormat() const {
 }
 
 // ==================== HoaDon ====================
+
 HoaDon::HoaDon() {
-    strcpy(maHD, ""); soLuongMatHang = 0;
+    strcpy(maHD, ""); soLuongMatHang = 0; 
 }
 
 void HoaDon::setMaHD(const char* ma) { strcpy(maHD, ma); }
@@ -48,10 +49,19 @@ bool HoaDon::chuaMatHang(const char* ma) const {
     return false;
 }
 
+int HoaDon::getSoLuongCacLoaiHang() const { return soLuongMatHang; }
+const ChiTietHoaDon& HoaDon::getChiTiet(int index) const { return danhSachBan[index]; }
+
+// Lấy số lượng của 1 mặt hàng cụ thể đang có trong đơn (dùng để tính hoàn kho)
+int HoaDon::laySoLuongCuaMatHang(const char* ma) const {
+    for (int i = 0; i < soLuongMatHang; i++) {
+        if (strcmp(danhSachBan[i].getMaHang(), ma) == 0) return danhSachBan[i].getSoLuong();
+    }
+    return 0;
+}
+
 void HoaDon::themMatHang(const char* ma, const char* ten, double gia, int sl) {
-    if (sl <= 0) return;
-    
-    // Nếu hàng đã có trong giỏ, tự động cộng dồn số lượng
+    if (sl <= 0) return; 
     for (int i = 0; i < soLuongMatHang; i++) {
         if (strcmp(danhSachBan[i].getMaHang(), ma) == 0) {
             danhSachBan[i].congThemSoLuong(sl);
@@ -82,8 +92,10 @@ void HoaDon::suaSoLuong(const char* ma, int slMoi) {
 void HoaDon::xoaMatHang(const char* ma) {
     for (int i = 0; i < soLuongMatHang; i++) {
         if (strcmp(danhSachBan[i].getMaHang(), ma) == 0) {
-            for (int j = i; j < soLuongMatHang - 1; j++) danhSachBan[j] = danhSachBan[j + 1];
-            soLuongMatHang--;
+            for (int j = i; j < soLuongMatHang - 1; j++) {
+                danhSachBan[j] = danhSachBan[j + 1];
+            }
+            soLuongMatHang--; 
             cout << "  Da xoa mat hang khoi don.\n";
             if (soLuongMatHang == 0) cout << "  [!] Canh bao: Don hang hien dang trong.\n";
             return;
